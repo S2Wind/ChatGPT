@@ -1,0 +1,217 @@
+// void Function: Use by call APIOpenUrl();
+function APIOpenUrl() {
+    console.log('%c DMOBIN %c OpenUrl : ', + window.adNetwork, 'background:darkslateblue;color:white', 'background:white;color:darkslateblue;');
+    let clickTag = '';
+    if (cc.sys.os == cc.sys.OS_ANDROID) {
+        clickTag = '';
+    } else if (cc.sys.os == cc.sys.OS_IOS) {
+        clickTag = '';
+    } else {
+        clickTag = window.defaultLink;
+    }
+    switch (window.adNetwork) {
+        case 'applovin':
+        case 'unity':
+            window.MraidOpen(clickTag);
+            break;
+        case 'facebook':
+            window.FacebookOpen();
+            break;
+        case 'ironsource':
+            window.DapiOpen(clickTag);
+            break;
+        case 'vungle':
+            window.VungleOpen();
+            break;
+        case 'mintegral':
+            window.MintergralOpen();
+            break;
+        case 'tiktok':
+            window.TikTokOpen();
+            break;
+        default:
+            window.open(clickTag);
+    }
+}
+function APINetwork() {
+    return window.adNetwork;
+}
+
+function APIOs() {
+    if (cc.sys.os == cc.sys.OS_ANDROID) {
+        return 'android';
+    } else if (cc.sys.os == cc.sys.OS_IOS) {
+        return 'ios';
+    } else {
+        return 'default';
+    }
+}
+
+// same
+function APIEnd() {
+    console.log('%c DMOBIN %c END : ' + window.adNetwork, 'background:darkslateblue;color:white', 'background:white;color:darkslateblue;');
+    switch (window.adNetwork) {
+        case 'mintegral':
+            window.gameEnd && window.gameEnd();
+            break;
+        default:
+            break;
+    }
+}
+// return Function.
+function APIGetVolumn() {
+    console.log('%c DMOBIN %c Get Volumn : ' + window.adNetwork, 'background:darkslateblue;color:white', 'background:white;color:darkslateblue;');
+    switch (window.adNetwork) {
+        case 'ironsource':
+            return dapi.getAudioVolume();
+        default:
+            return 1;
+    }
+}
+// Function has callback. Check that game is ready 
+function APICallIsReady(callbackFocus, callbackBlur) {
+    console.log('%c DMOBIN %c Call isREADY : ' + window.adNetwork, 'background:darkslateblue;color:white', 'background:white;color:darkslateblue;');
+    switch (window.adNetwork) {
+        case 'ironsource':
+            console.log('%c DMOBIN %c check isready', 'background:darkslateblue;color:white', 'background:white;color:darkslateblue;');
+            (dapi.isReady()) ? dapiOnReadyCallBack() : dapi.addEventListener("ready", dapiOnReadyCallBack);
+            break;
+        case 'unity':
+        case 'applovin':
+            console.log('%c DMOBIN %c check isready', 'background:darkslateblue;color:white', 'background:white;color:darkslateblue;');
+            (mraid.getState() === 'loading') ? mraid.addEventListener('ready', mraidOnReadyCallBack) : mraidOnReadyCallBack();
+            break;
+        case 'mintegral':
+            console.log('%c DMOBIN %c check isready', 'background:darkslateblue;color:white', 'background:white;color:darkslateblue;');
+            window.gameReady && window.gameReady();
+            defaultOnReadyCallBack();
+            break;
+        case 'tiktok':
+            window.playableSDK.isViewable().then((viewable) => {
+                if (viewable) {
+                    callbackFocus();
+                }
+                else {
+                    callbackBlur();
+                }
+            });
+            break;
+        default:
+            console.log('%c DMOBIN %c check isready', 'background:darkslateblue;color:white', 'background:white;color:darkslateblue;');
+            defaultOnReadyCallBack();
+            break;
+    }
+
+    function dapiOnReadyCallBack() {
+        dapi.removeEventListener('ready', dapiOnReadyCallBack);
+
+        (dapi.isViewable()) ? callbackFocus() : callbackBlur();
+
+        dapi.addEventListener("viewableChange", dapiViewableChangeCallBack);
+
+    }
+
+    function dapiViewableChangeCallBack(viewable) {
+        console.log('%c DMOBIN %c ViewableChange', 'background:darkslateblue;color:white', 'background:white;color:darkslateblue;');
+        (viewable) ? callbackFocus() : callbackBlur();
+    }
+
+    function mraidOnReadyCallBack() {
+        mraid.removeEventListener('ready', mraidOnReadyCallBack);
+        (mraid.isViewable()) ? callbackFocus() : callbackBlur();
+
+        mraid.addEventListener('viewableChange', mraidViewableChangeCallBack);
+    }
+
+    function mraidViewableChangeCallBack(viewable) {
+        console.log('%c DMOBIN %c ViewableChange', 'background:darkslateblue;color:white', 'background:white;color:darkslateblue;');
+        (viewable) ? callbackFocus() : callbackBlur();
+    }
+
+
+    function defaultOnReadyCallBack() {
+        console.log('%c DMOBIN %c DEFAULT ', 'background:darkslateblue;color:white', 'background:white;color:darkslateblue;');
+        callbackFocus();
+        defaultViewableChangeCallBack();
+    }
+
+    function defaultViewableChangeCallBack() {
+        window.addEventListener('focus', () => {
+            console.log('%c APICALL %c event Focus', 'background:darkslateblue;color:white', 'background:white;color:darkslateblue;');
+            callbackFocus();
+        });
+        window.addEventListener('blur', () => {
+            console.log('%c DMOBIN %c event Blur', 'background:darkslateblue;color:white', 'background:white;color:darkslateblue;');
+            callbackBlur();
+        });
+    }
+}
+function APICallChangeVolumn(callback) {
+    console.log('%c DMOBIN %c Change Volumn : ' + window.adNetwork, 'background:darkslateblue;color:white', 'background:white;color:darkslateblue;');
+    switch (window.adNetwork) {
+        case 'ironsource':
+            dapi.addEventListener("audioVolumeChange", () => {
+                console.log('%c DMOBIN %c volumn change', 'background:darkslateblue;color:white', 'background:white;color:darkslateblue;');
+                callback();
+            });
+            break;
+        default:
+            window.addEventListener('volumechange', () => {
+                console.log('%c DMOBIN %c volumn change', 'background:darkslateblue;color:white', 'background:white;color:darkslateblue;');
+                callback();
+            });
+            break;
+    }
+}
+
+function APIGetScreenSize() {
+    console.log('%c DMOBIN %c GetScreenSize : ' + window.adNetwork, 'background:darkslateblue;color:white', 'background:white;color:darkslateblue;');
+    switch (window.adNetwork) {
+        case 'ironsource':
+            console.log('%c DMOBIN %c Screen Size', 'background:darkslateblue;color:white', 'background:white;color:darkslateblue;');
+            return dapi.getScreenSize();
+        case 'unity':
+            console.log('%c DMOBIN %c Screen Size', 'background:darkslateblue;color:white', 'background:white;color:darkslateblue;');
+            return mraid.getScreenSize();
+        default:
+            return {
+                width: cc.game.canvas.width, height: cc.game.canvas.height
+            };
+    }
+}
+function APICallResizeScreen(callback) {
+    console.log('%c DMOBIN %c Resize Screen : ' + window.adNetwork, 'background:darkslateblue;color:white', 'background:white;color:darkslateblue;');
+    switch (window.adNetwork) {
+        case 'ironsource':
+            console.log('%c DMOBIN %c', 'background:darkslateblue;color:white', 'background:white;color:darkslateblue;');
+            dapi.addEventListener("adResized", callback);
+            break;
+        default:
+            cc.view.setResizeCallback(() => {
+                console.log('%c DMOBIN %c Resize', 'background:darkslateblue;color:white', 'background:white;color:darkslateblue;');
+                callback();
+            });
+            window.addEventListener('resize', () => {
+                console.log('%c DMOBIN %c Resize', 'background:darkslateblue;color:white', 'background:white;color:darkslateblue;');
+                callback();
+            });
+            window.addEventListener("orientationchange", () => {
+                console.log('%c DMOBIN %c OrientationChange', 'background:darkslateblue;color:white', 'background:white;color:darkslateblue;');
+                callback();
+            });
+    }
+}
+function APILink() {
+    let clickTag = '';
+    if (cc.sys.os == cc.sys.OS_ANDROID) {
+        clickTag = window.androidLink;
+    } else if (cc.sys.os == cc.sys.OS_IOS) {
+        clickTag = window.iosLink;
+    } else {
+        clickTag = window.defaultLink;
+    }
+    return clickTag;
+}
+function APIIndexPLY() {
+    return window.indexPLY;
+}
